@@ -1,0 +1,36 @@
+# Priority 1: Essential Ephemeris Functions
+spkezr_c.c          # Get state vector (position + velocity)
+spkpos_c.c          # Get position vector
+spkgeo_c.c          # Get geometric state
+
+# Priority 2: Time System Functions  
+str2et_c.c          # String to ephemeris time
+et2utc_c.c          # Ephemeris time to UTC
+utc2et_c.c          # UTC to ephemeris time
+timout_c.c          # Time formatting
+
+# Priority 3: Coordinate Transformations
+pxform_c.c          # Position transformation matrix
+sxform_c.c          # State transformation matrix
+reclat_c.c          # Rectangular to latitudinal
+latrec_c.c          # Latitudinal to rectangular
+recsph_c.c          # Rectangular to spherical
+sphrec_c.c          # Spherical to rectangular
+
+# Priority 4: Kernel Management
+furnsh_c.c          # Load kernels
+unload_c.c          # Unload kernels
+kclear_c.c          # Clear all kernels
+
+# Priority 5: Planetary Constants
+bodvrd_c.c          # Get body variable real data
+bodn2c_c.c          # Body name to code
+bodc2n_c.c          # Body code to name
+
+# Priority 6: Mathematical Operations
+vdot_c.c            # Vector dot product
+vcrss_c.c           # Vector cross product
+vnorm_c.c           # Vector norm
+vhat_c.c            # Unit vector
+mxm_c.c             # Matrix multiply
+mxv_c.c             # Matrix times vector

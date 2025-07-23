@@ -2,94 +2,74 @@
 name = "rust-spice"
 version = "0.1.0"
 edition = "2021"
-description = "A fully converted (non-wrapped) version of CSPICE for Rust that works with WASM-TypeScript"
+authors = ["RustSPICE Contributors"]
+description = "Complete Rust implementation of NASA's SPICE toolkit for WebAssembly - Full CSPICE conversion"
 license = "CC0-1.0"
 repository = "https://github.com/Jthora/RustSPICE"
+keywords = ["space", "astronomy", "nasa", "spice", "ephemeris"]
+categories = ["science", "mathematics", "aerospace", "wasm"]
 
 [lib]
 crate-type = ["cdylib", "rlib"]
 
+[features]
+default = ["std"]
+std = []
+wasm = ["wasm-bindgen", "web-sys", "js-sys"]
+
 [dependencies]
-# WASM bindings and JavaScript interop
-wasm-bindgen = { version = "0.2", features = ["serde-serialize"] }
-js-sys = "0.3"
-web-sys = { version = "0.3", optional = true, features = [
+# Core dependencies for no_std compatibility - essential for WASM
+# No external math libraries - we implement everything from scratch for accuracy
+libm = "0.2"  # Math functions for no_std
+
+# WASM dependencies - only when targeting wasm32
+wasm-bindgen = { version = "0.2", optional = true, features = ["serde-serialize"] }
+js-sys = { version = "0.3", optional = true }
+
+[dependencies.web-sys]
+version = "0.3"
+optional = true
+features = [
   "console",
-  "Window",
   "Document",
-] }
+  "Element", 
+  "HtmlElement",
+  "Window",
+]
 
-# Error handling and debugging for WASM
-console_error_panic_hook = { version = "0.1", optional = true }
-wee_alloc = { version = "0.4", optional = true }
-
-# Mathematical and scientific computing
-nalgebra = { version = "0.32", features = ["std"] }
-
-# Serialization for kernel data
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
-serde-wasm-bindgen = "0.6"
-
-# Error handling
-thiserror = "1.0"
-anyhow = "1.0"
-
-[dependencies.getrandom]
-version = "0.2"
-features = ["js"]
-
-[build-dependencies]
-# Generate bindings from C headers (optional - requires libclang)
-bindgen = { version = "0.69", optional = true }
-
+# Development dependencies for testing against CSPICE reference
 [dev-dependencies]
-# Testing and benchmarking
-criterion = { version = "0.5", features = ["html_reports"] }
-proptest = "1.4"
-insta = "1.34"
-quickcheck = "1.0"
-quickcheck_macros = "1.0"
+approx = "0.5"      # For floating point comparisons in tests
+criterion = "0.5"   # For performance benchmarking
 
 # WASM testing
 wasm-bindgen-test = "0.3"
 
-[features]
-default = ["console_error_panic_hook", "web-apis"]
+# Target-specific dependencies
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+wasm-bindgen = "0.2"
+js-sys = "0.3"
+web-sys = { version = "0.3", features = ["console"] }
 
-# Optional features for different build targets
-bindgen = ["dep:bindgen"]  # Enable automatic binding generation (requires libclang)
-wee_alloc = ["dep:wee_alloc"]  # Use wee_alloc for smaller WASM size
-f64 = []  # Use f64 precision throughout (default)
-f32 = []  # Use f32 for smaller WASM size
-
-# WASM-specific features
-wasm-bindgen-serde = ["wasm-bindgen/serde-serialize"]
-web-apis = ["dep:web-sys"]
-
-[[bench]]
-name = "ephemeris_benchmark"
-harness = false
-
+# Profile optimizations for WASM
 [profile.release]
-# Tell `rustc` to optimize for small code size.
-opt-level = "s"
-lto = true
-codegen-units = 1
-panic = "abort"
-strip = true
+opt-level = 3           # Maximum optimization for numerical accuracy
+lto = true              # Link-time optimization
+codegen-units = 1       # Single code generation unit for better optimization
+panic = "abort"         # Smaller WASM size
+strip = true            # Remove debug symbols
 
 [profile.dev]
-# Faster builds for development
-opt-level = 0
-debug = 2
-incremental = true
+opt-level = 0           # Fast compilation for development
+debug = 2               # Full debug info
+panic = "abort"         # Consistent with release
 
+# Benchmark profile for performance testing against CSPICE
 [profile.bench]
-# Optimize benchmarks for performance
 opt-level = 3
 debug = true
+lto = true
 
-# Optimize dependencies even in debug builds
+# Optimize dependencies even in debug builds for numerical consistency
 [profile.dev.package."*"]
 opt-level = 1

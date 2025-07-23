@@ -6,7 +6,6 @@ node_modules/
 # Large binary files and libraries
 cspice/cspice/lib/
 cspice/cspice/exe/
-cspice/cspice/src/
 cspice.tar
 *.wasm
 *.so
@@ -21,8 +20,14 @@ package-lock.json
 # Log files
 *.log
 
-# Documentation that doesn't need AI context
-cspice/cspice/doc/
+# Most documentation (keep key reference docs available)
+cspice/cspice/doc/html/
+cspice/cspice/doc/*.ug
+cspice/cspice/doc/brief.ug
+cspice/cspice/doc/chronos.ug
+
+# Test data files (too large for context)
+cspice/cspice/data/
 
 # Test output and benchmarks
 target/criterion/
@@ -38,3 +43,26 @@ coverage/
 # OS files
 .DS_Store
 Thumbs.db
+
+# Large CSPICE source directories (include selectively)
+cspice/cspice/src/brief_c/
+cspice/cspice/src/chronos_c/
+cspice/cspice/src/ckbrief_c/
+cspice/cspice/src/commnt_c/
+cspice/cspice/src/dskbrief_c/
+cspice/cspice/src/dskexp_c/
+cspice/cspice/src/frmdiff_c/
+cspice/cspice/src/inspekt_c/
+cspice/cspice/src/mkdsk_c/
+cspice/cspice/src/mkspk_c/
+cspice/cspice/src/msopck_c/
+cspice/cspice/src/simple_c/
+cspice/cspice/src/spacit_c/
+cspice/cspice/src/spkdiff_c/
+cspice/cspice/src/spkmerge_c/
+cspice/cspice/src/states_c/
+cspice/cspice/src/subpt_c/
+cspice/cspice/src/tictoc_c/
+cspice/cspice/src/tobin_c/
+cspice/cspice/src/toxfr_c/
+cspice/cspice/src/version_c/
