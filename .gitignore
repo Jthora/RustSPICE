@@ -14,15 +14,19 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# CSPICE library files (keep source but ignore binaries)
+# CSPICE library files (keep source and headers, ignore binaries)
 /cspice/cspice/lib/
 /cspice/cspice/exe/
-/cspice/cspice/src/*/
 /cspice/cspice.tar
 *.so
 *.a
 *.dylib
 *.dll
+
+# CSPICE build artifacts but keep source code
+/cspice/cspice/src/*/VERSION
+/cspice/cspice/src/*/*.o
+/cspice/cspice/src/*/makefile
 
 # IDE and editor files
 .vscode/settings.json
