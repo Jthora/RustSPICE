@@ -1,0 +1,31 @@
+{
+  "recommendations": [
+    // Rust development
+    "rust-lang.rust-analyzer",
+    "vadimcn.vscode-lldb",
+    "serayuzgur.crates",
+    
+    // WASM and TypeScript
+    "ms-vscode.vscode-typescript-next",
+    "bradlc.vscode-tailwindcss",
+    
+    // Web development
+    "ms-vscode.vscode-json",
+    "redhat.vscode-yaml",
+    
+    // Git and collaboration
+    "github.copilot",
+    "github.copilot-chat",
+    "github.vscode-pull-request-github",
+    "eamodio.gitlens",
+    
+    // General productivity
+    "ms-vscode.hexeditor",
+    "gruntfuggly.todo-tree",
+    "streetsidesoftware.code-spell-checker",
+    
+    // Documentation
+    "yzhang.markdown-all-in-one",
+    "davidanson.vscode-markdownlint"
+  ]
+}
