@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>RustSPICE WASM Demo</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .result { background: #f0f0f0; padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .error { background: #ffebee; color: #c62828; }
+        .success { background: #e8f5e8; color: #2e7d32; }
+        input, select, button { margin: 5px; padding: 8px; }
+        #kernelFile { margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>RustSPICE WASM Demo</h1>
+        <p>This demo shows how to use the RustSPICE WebAssembly module for spacecraft ephemeris calculations.</p>
+        
+        <h2>Load SPICE Kernel</h2>
+        <div>
+            <input type="file" id="kernelFile" accept=".bsp,.tls,.pck">
+            <button onclick="loadKernel()">Load Kernel</button>
+        </div>
+        <div id="kernelStatus" class="result"></div>
+        
+        <h2>Calculate State Vector</h2>
+        <div>
+            <label>Target Body:</label>
+            <select id="target">
+                <option value="MOON">Moon</option>
+                <option value="MARS">Mars</option>
+                <option value="VENUS">Venus</option>
+                <option value="JUPITER">Jupiter</option>
+            </select>
+            
+            <label>Observer:</label>
+            <select id="observer">
+                <option value="EARTH">Earth</option>
+                <option value="SUN">Sun</option>
+                <option value="MARS BARYCENTER">Mars Barycenter</option>
+            </select>
+            
+            <label>Reference Frame:</label>
+            <select id="refFrame">
+                <option value="J2000">J2000</option>
+                <option value="ECLIPJ2000">ECLIPJ2000</option>
+                <option value="IAU_EARTH">IAU_EARTH</option>
+            </select>
+            
+            <label>Aberration Correction:</label>
+            <select id="abcorr">
+                <option value="NONE">None</option>
+                <option value="LT">Light Time</option>
+                <option value="LT+S">Light Time + Stellar</option>
+            </select>
+        </div>
+        
+        <div>
+            <label>Date (YYYY-MM-DD):</label>
+            <input type="date" id="date" value="2025-07-22">
+            
+            <label>Time (HH:MM:SS):</label>
+            <input type="time" id="time" value="12:00:00">
+            
+            <button onclick="calculateStateVector()">Calculate</button>
+        </div>
+        
+        <div id="result" class="result"></div>
+        
+        <h2>Example Usage</h2>
+        <pre><code>
+import init, { 
+    get_state_vector, 
+    load_kernel_from_buffer,
+    calendar_to_et 
+} from './pkg/rust_spice.js';
+
+// Initialize the WASM module
+await init();
+
+// Load a kernel file
+const response = await fetch('de442.bsp');
+const buffer = await response.arrayBuffer();
+await load_kernel_from_buffer(buffer, 'de442.bsp');
+
+// Calculate state vector
+const et = calendar_to_et(2025, 7, 22, 12, 0, 0);
+const state = get_state_vector('MOON', et, 'J2000', 'NONE', 'EARTH');
+
+console.log('Position (km):', state.position);
+console.log('Velocity (km/s):', state.velocity);
+console.log('Light time (s):', state.light_time);
+        </code></pre>
+    </div>
+
+    <script type="module">
+        import init, { 
+            get_state_vector, 
+            load_kernel_from_buffer,
+            calendar_to_et,
+            clear_kernels 
+        } from './pkg/rust_spice.js';
+        
+        let wasmModule;
+        
+        // Initialize WASM module
+        async function initWasm() {
+            try {
+                wasmModule = await init();
+                document.getElementById('result').innerHTML = 
+                    '<div class="success">RustSPICE WASM module loaded successfully!</div>';
+            } catch (error) {
+                document.getElementById('result').innerHTML = 
+                    '<div class="error">Failed to load WASM module: ' + error + '</div>';
+            }
+        }
+        
+        // Load kernel file
+        window.loadKernel = async function() {
+            const fileInput = document.getElementById('kernelFile');
+            const statusDiv = document.getElementById('kernelStatus');
+            
+            if (!fileInput.files[0]) {
+                statusDiv.innerHTML = '<div class="error">Please select a kernel file</div>';
+                return;
+            }
+            
+            const file = fileInput.files[0];
+            const arrayBuffer = await file.arrayBuffer();
+            
+            try {
+                await load_kernel_from_buffer(arrayBuffer, file.name);
+                statusDiv.innerHTML = '<div class="success">Kernel loaded: ' + file.name + ' (' + file.size + ' bytes)</div>';
+            } catch (error) {
+                statusDiv.innerHTML = '<div class="error">Failed to load kernel: ' + error + '</div>';
+            }
+        };
+        
+        // Calculate state vector
+        window.calculateStateVector = function() {
+            const target = document.getElementById('target').value;
+            const observer = document.getElementById('observer').value;
+            const refFrame = document.getElementById('refFrame').value;
+            const abcorr = document.getElementById('abcorr').value;
+            const date = document.getElementById('date').value;
+            const time = document.getElementById('time').value;
+            
+            const resultDiv = document.getElementById('result');
+            
+            try {
+                // Parse date and time
+                const [year, month, day] = date.split('-').map(Number);
+                const [hour, minute, second] = time.split(':').map(Number);
+                
+                // Convert to ephemeris time
+                const et = calendar_to_et(year, month, day, hour, minute, second);
+                
+                // Calculate state vector
+                const state = get_state_vector(target, et, refFrame, abcorr, observer);
+                
+                // Display results
+                resultDiv.innerHTML = `
+                    <div class="success">
+                        <h3>State Vector Results</h3>
+                        <p><strong>Target:</strong> ${target}</p>
+                        <p><strong>Observer:</strong> ${observer}</p>
+                        <p><strong>Epoch:</strong> ${date} ${time}</p>
+                        <p><strong>Position (km):</strong></p>
+                        <ul>
+                            <li>X: ${state.x.toFixed(3)}</li>
+                            <li>Y: ${state.y.toFixed(3)}</li>
+                            <li>Z: ${state.z.toFixed(3)}</li>
+                        </ul>
+                        <p><strong>Velocity (km/s):</strong></p>
+                        <ul>
+                            <li>VX: ${state.vx.toFixed(6)}</li>
+                            <li>VY: ${state.vy.toFixed(6)}</li>
+                            <li>VZ: ${state.vz.toFixed(6)}</li>
+                        </ul>
+                        <p><strong>Light Time:</strong> ${state.light_time.toFixed(6)} seconds</p>
+                        <p><strong>Distance:</strong> ${Math.sqrt(state.x*state.x + state.y*state.y + state.z*state.z).toFixed(3)} km</p>
+                    </div>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = '<div class="error">Error calculating state vector: ' + error.message + '</div>';
+            }
+        };
+        
+        // Initialize when page loads
+        initWasm();
+    </script>
+</body>
+</html>

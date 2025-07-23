@@ -1,0 +1,14 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug Rust Tests",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/target/debug/deps/rust_spice",
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}",
+      "preLaunchTask": "Rust: cargo build"
+    }
+  ]
+}

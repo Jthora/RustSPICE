@@ -1,0 +1,40 @@
+# Build artifacts and generated files
+target/
+pkg/
+node_modules/
+
+# Large binary files and libraries
+cspice/cspice/lib/
+cspice/cspice/exe/
+cspice/cspice/src/
+cspice.tar
+*.wasm
+*.so
+*.a
+*.dylib
+*.dll
+
+# Lock files (don't need AI assistance)
+Cargo.lock
+package-lock.json
+
+# Log files
+*.log
+
+# Documentation that doesn't need AI context
+cspice/cspice/doc/
+
+# Test output and benchmarks
+target/criterion/
+test-results/
+coverage/
+
+# Temporary and backup files
+*.tmp
+*.temp
+*.bak
+*.backup
+
+# OS files
+.DS_Store
+Thumbs.db

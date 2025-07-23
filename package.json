@@ -1,0 +1,65 @@
+{
+  "name": "rustspice-dev",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Development environment for RustSPICE",
+  "scripts": {
+    "build": "cargo build --release",
+    "build-wasm": "./wasm-pack-build.sh web release",
+    "build-wasm-dev": "./wasm-pack-build.sh web dev",
+    "build-wasm-node": "./wasm-pack-build.sh nodejs release",
+    "test": "cargo test",
+    "test-all": "./run_tests.sh all",
+    "test-wasm": "jest tests/typescript_integration.test.ts",
+    "test-ts": "tsc --noEmit",
+    "lint": "cargo clippy -- -D warnings",
+    "fmt": "cargo fmt",
+    "bench": "cargo bench",
+    "validate": "./validate_against_cspice.sh all",
+    "clean": "cargo clean && rm -rf pkg dist node_modules",
+    "dev": "npm run build-wasm-dev && npm run test-ts",
+    "prepare": "npm run build-wasm",
+    "docs": "cargo doc --open"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.0",
+    "@types/node": "^20.0.0",
+    "jest": "^29.5.0",
+    "ts-jest": "^29.1.0",
+    "typescript": "^5.0.0"
+  },
+  "jest": {
+    "preset": "ts-jest",
+    "testEnvironment": "node",
+    "testMatch": [
+      "**/tests/**/*.test.ts"
+    ],
+    "collectCoverageFrom": [
+      "tests/**/*.ts"
+    ],
+    "coverageDirectory": "coverage",
+    "coverageReporters": [
+      "text",
+      "lcov",
+      "html"
+    ]
+  },
+  "engines": {
+    "node": ">=14.0.0",
+    "npm": ">=6.0.0"
+  },
+  "keywords": [
+    "spice",
+    "nasa",
+    "astronomy",
+    "ephemeris",
+    "orbital-mechanics",
+    "spacecraft",
+    "webassembly",
+    "wasm",
+    "rust",
+    "typescript"
+  ],
+  "author": "RustSPICE Contributors",
+  "license": "CC0-1.0"
+}

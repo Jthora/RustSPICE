@@ -1,0 +1,38 @@
+# Build artifacts
+target/
+pkg/
+
+# Dependencies
+node_modules/
+
+# Large binary files
+cspice/cspice/lib/
+cspice/cspice/exe/
+cspice/cspice/src/
+cspice.tar
+*.wasm
+*.so
+*.a
+*.dylib
+*.dll
+
+# Development files
+.vscode/
+.git/
+.gitignore
+README.md
+*.md
+grok-conversation-*.md
+
+# Logs and temporary files
+*.log
+*.tmp
+*.temp
+
+# Test outputs
+test-results/
+coverage/
+
+# OS files
+.DS_Store
+Thumbs.db
