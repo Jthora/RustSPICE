@@ -66,6 +66,60 @@ impl SpiceMatrix3x3 {
             - m[0][1] * (m[1][0] * m[2][2] - m[1][2] * m[2][0])
             + m[0][2] * (m[1][0] * m[2][1] - m[1][1] * m[2][0])
     }
+
+    /// Get matrix element
+    pub fn get(&self, row: usize, col: usize) -> SpiceDouble {
+        self.0[row][col]
+    }
+
+    /// Set matrix element
+    pub fn set(&mut self, row: usize, col: usize, value: SpiceDouble) {
+        self.0[row][col] = value;
+    }
+
+    /// Matrix multiplication
+    pub fn multiply(&self, other: &SpiceMatrix3x3) -> SpiceMatrix3x3 {
+        let mut result = [[0.0; 3]; 3];
+        for i in 0..3 {
+            for j in 0..3 {
+                for k in 0..3 {
+                    result[i][j] += self.0[i][k] * other.0[k][j];
+                }
+            }
+        }
+        SpiceMatrix3x3(result)
+    }
+
+    /// Matrix subtraction
+    pub fn subtract(&self, other: &SpiceMatrix3x3) -> SpiceMatrix3x3 {
+        let mut result = [[0.0; 3]; 3];
+        for i in 0..3 {
+            for j in 0..3 {
+                result[i][j] = self.0[i][j] - other.0[i][j];
+            }
+        }
+        SpiceMatrix3x3(result)
+    }
+
+    /// Scale matrix by scalar
+    pub fn scale(&self, scalar: SpiceDouble) -> SpiceMatrix3x3 {
+        let mut result = [[0.0; 3]; 3];
+        for i in 0..3 {
+            for j in 0..3 {
+                result[i][j] = self.0[i][j] * scalar;
+            }
+        }
+        SpiceMatrix3x3(result)
+    }
+
+    /// Multiply matrix by vector
+    pub fn multiply_vector(&self, vector: &SpiceVector3) -> SpiceVector3 {
+        SpiceVector3([
+            self.0[0][0] * vector.0[0] + self.0[0][1] * vector.0[1] + self.0[0][2] * vector.0[2],
+            self.0[1][0] * vector.0[0] + self.0[1][1] * vector.0[1] + self.0[1][2] * vector.0[2],
+            self.0[2][0] * vector.0[0] + self.0[2][1] * vector.0[1] + self.0[2][2] * vector.0[2],
+        ])
+    }
 }
 
 impl Index<usize> for SpiceMatrix3x3 {
@@ -100,6 +154,27 @@ impl SpiceMatrix6x6 {
 
     pub fn zeros() -> Self {
         SpiceMatrix6x6([[0.0; 6]; 6])
+    }
+
+    /// Get matrix element
+    pub fn get(&self, row: usize, col: usize) -> SpiceDouble {
+        self.0[row][col]
+    }
+
+    /// Set matrix element
+    pub fn set(&mut self, row: usize, col: usize, value: SpiceDouble) {
+        self.0[row][col] = value;
+    }
+
+    /// Multiply matrix by 6D vector
+    pub fn multiply_vector(&self, vector: &SpiceVector6) -> SpiceVector6 {
+        let mut result = [0.0; 6];
+        for i in 0..6 {
+            for j in 0..6 {
+                result[i] += self.0[i][j] * vector.0[j];
+            }
+        }
+        SpiceVector6(result)
     }
 }
 
@@ -154,6 +229,29 @@ impl SpiceVector3 {
             self.0[0] * other.0[1] - self.0[1] * other.0[0],
         ])
     }
+
+    /// Normalize vector (alias for unit)
+    pub fn normalize(&self) -> SpiceResult<SpiceVector3> {
+        self.unit()
+    }
+
+    /// Scale vector by scalar
+    pub fn scale(&self, scalar: SpiceDouble) -> SpiceVector3 {
+        SpiceVector3([
+            self.0[0] * scalar,
+            self.0[1] * scalar,
+            self.0[2] * scalar,
+        ])
+    }
+
+    /// Subtract two vectors
+    pub fn subtract(&self, other: &SpiceVector3) -> SpiceVector3 {
+        SpiceVector3([
+            self.0[0] - other.0[0],
+            self.0[1] - other.0[1],
+            self.0[2] - other.0[2],
+        ])
+    }
 }
 
 impl Add for SpiceVector3 {
@@ -196,6 +294,16 @@ pub struct SpiceVector6(pub [SpiceDouble; 6]);
 impl SpiceVector6 {
     pub fn new(data: [SpiceDouble; 6]) -> Self {
         SpiceVector6(data)
+    }
+
+    /// Get vector element
+    pub fn get(&self, index: usize) -> SpiceDouble {
+        self.0[index]
+    }
+
+    /// Set vector element
+    pub fn set(&mut self, index: usize, value: SpiceDouble) {
+        self.0[index] = value;
     }
 
     pub fn from_position_velocity(pos: SpiceVector3, vel: SpiceVector3) -> Self {

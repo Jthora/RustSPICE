@@ -67,3 +67,13 @@ coverage/
 # Backup files
 *.bak
 *.backup
+
+# SPICE Kernel files - keep essential ones for testing
+# Note: de442.bsp is 115MB but needed for ephemeris tests
+# Exclude other large SPK files if added later
+/kernels/spk/*
+!/kernels/spk/de442.bsp
+# Keep smaller essential kernels
+!/kernels/lsk/*.tls
+!/kernels/pck/*.tpc
+!/kernels/*.mk

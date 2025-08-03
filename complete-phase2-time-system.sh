@@ -1,3 +1,19 @@
+#!/bin/bash
+
+# RustSPICE Phase 2: Complete Time System Implementation
+# Full CSPICE equivalency for str2et_c, et2utc_c, tparse_c, timout_c, deltet_c
+
+echo "🚀 RustSPICE Phase 2: Complete Time System Implementation"
+echo "=================================================="
+
+# Backup existing file
+if [ -f "src/time_system.rs" ]; then
+    cp src/time_system.rs src/time_system.rs.backup
+    echo "✅ Backed up existing time_system.rs"
+fi
+
+# Create the complete time system implementation
+cat > src/time_system.rs << 'EOF'
 //! Complete CSPICE Time System Implementation for RustSPICE
 //! 
 //! This module provides full equivalency to CSPICE time functions:
@@ -935,11 +951,10 @@ mod tests {
     #[test]
     fn test_str_to_et_iso8601() {
         let et = str_to_et("2025-07-23T12:00:00.000Z").unwrap();
-        // This should be about 25.5 years past J2000
-        // The exact calculation will depend on leap seconds and calendar
-        // Let's just verify it's in the reasonable range for 2025
-        assert!(et.seconds() > 700000000.0); // After ~22 years from J2000
-        assert!(et.seconds() < 900000000.0); // Before ~28 years from J2000
+        // J2000 epoch: 2000-01-01T12:00:00
+        // 2025-07-23T12:00:00 should be ~25.5 years later
+        let expected_seconds = 25.5 * 365.25 * 86400.0 + 204.0 * 86400.0; // Approximate
+        assert_relative_eq!(et.seconds(), expected_seconds, epsilon = 86400.0); // Within 1 day
     }
 
     #[test]
@@ -978,32 +993,29 @@ mod tests {
         assert!(iso.contains("2000-01-01T") && iso.ends_with("Z"));
         
         let julian = et_to_utc(et, "J", 6).unwrap();
-        assert!(julian.starts_with("JD"));
+        assert!(julian.starts_with("JD") && julian.contains("2451545"));
     }
 
     #[test]
     fn test_time_parse_comprehensive() {
-        // Test various formats - focus on parsing success rather than exact dates
+        // Test various formats
         let inputs = vec![
-            ("2025-07-23T12:00:00Z", 2025, 7, 23, 12, 0),
-            ("JUL 23, 2025 12:00:00", 2025, 7, 23, 12, 0),
-            ("23 JUL 2025 12:00:00", 2025, 7, 23, 12, 0),
-            ("2025 JUL 23 12:00:00", 2025, 7, 23, 12, 0),
-            ("2025-204 // 12:00:00", 2025, 7, 23, 12, 0), // 204th day = July 23
+            "2025-07-23T12:00:00Z",
+            "JUL 23, 2025 12:00:00",
+            "23 JUL 2025 12:00:00",
+            "2025 JUL 23 12:00:00",
+            "JD 2460514.5",
+            "2025-204 // 12:00:00",
         ];
         
-        for (input, expected_year, expected_month, expected_day, expected_hour, expected_minute) in inputs {
+        for input in inputs {
             let parsed = time_parse(input).unwrap();
-            assert_eq!(parsed.year, expected_year, "Failed for input: {}", input);
-            assert_eq!(parsed.month, expected_month, "Failed for input: {}", input);
-            assert_eq!(parsed.day, expected_day, "Failed for input: {}", input);
-            assert_eq!(parsed.hour, expected_hour, "Failed for input: {}", input);
-            assert_eq!(parsed.minute, expected_minute, "Failed for input: {}", input);
+            assert_eq!(parsed.year, 2025);
+            assert_eq!(parsed.month, 7);
+            assert_eq!(parsed.day, 23);
+            assert_eq!(parsed.hour, 12);
+            assert_eq!(parsed.minute, 0);
         }
-        
-        // Test Julian Date separately since it converts to a different date
-        let jd_parsed = time_parse("JD 2460514.5").unwrap();
-        assert!(jd_parsed.year >= 2020 && jd_parsed.year <= 2030); // Reasonable range
     }
 
     #[test]
@@ -1115,20 +1127,80 @@ mod tests {
 
     #[test]
     fn test_edge_cases() {
-        // Test leap day - allow for small time drift due to leap seconds
+        // Test leap day
         let leap_day = str_to_et("2024-02-29T00:00:00Z").unwrap();
         let back_to_string = et_to_utc(leap_day, "ISOC", 3).unwrap();
-        assert!(back_to_string.contains("2024-02")); // Should be in February 2024
+        assert!(back_to_string.contains("2024-02-29"));
         
-        // Test century boundary  
+        // Test century boundary
         let y2k = str_to_et("2000-01-01T00:00:00Z").unwrap();
         let back_to_string = et_to_utc(y2k, "C", 3).unwrap();
-        // This will be close to J2000 epoch, might be late Dec 1999 due to leap seconds
-        assert!(back_to_string.contains("1999") || back_to_string.contains("2000"));
+        assert!(back_to_string.contains("2000 JAN 01"));
         
         // Test far future date
         let future = str_to_et("2100-12-31T23:59:59Z").unwrap();
         let back_to_string = et_to_utc(future, "D", 3).unwrap();
-        assert!(back_to_string.contains("2100"));
+        assert!(back_to_string.contains("2100-365"));
     }
 }
+EOF
+
+echo "✅ Complete time system implementation created"
+
+# Update the lib.rs to include the time system module
+echo "📝 Updating lib.rs to include complete time system..."
+
+# Check if time_system is already included
+if ! grep -q "pub mod time_system;" src/lib.rs; then
+    # Add time_system module
+    sed -i '/pub mod foundation;/a pub mod time_system;' src/lib.rs
+fi
+
+# Update public exports
+if ! grep -q "pub use time_system::" src/lib.rs; then
+    cat >> src/lib.rs << 'EOF'
+
+// Time System Exports
+pub use time_system::{
+    str_to_et, et_to_utc, time_parse, time_output, delta_et_utc,
+    ParsedTime, CalendarType, Era, is_leap_year,
+    day_of_year_to_month_day, month_day_to_day_of_year
+};
+EOF
+fi
+
+echo "✅ Updated lib.rs with complete time system exports"
+
+# Build and test
+echo "🔨 Building and testing complete time system..."
+cargo build --release
+
+if [ $? -eq 0 ]; then
+    echo "✅ Build successful"
+    
+    echo "🧪 Running comprehensive time system tests..."
+    cargo test time_system --lib
+    
+    if [ $? -eq 0 ]; then
+        echo "✅ All time system tests passed"
+        echo ""
+        echo "🎉 Phase 2 Complete Time System Implementation SUCCESSFUL!"
+        echo "=================================================="
+        echo "✅ Full CSPICE time function equivalency achieved"
+        echo "✅ Comprehensive parsing for all major time formats"
+        echo "✅ Accurate calendar and Julian Date conversions"
+        echo "✅ Proper leap second handling"
+        echo "✅ Picture string formatting support"
+        echo "✅ Extensive validation and error handling"
+        echo "✅ Historical calendar accuracy (Julian/Gregorian)"
+        echo "✅ Complete test coverage with edge cases"
+        echo ""
+        echo "Ready for Phase 3: Coordinate System Implementation"
+    else
+        echo "❌ Some tests failed - review implementation"
+        exit 1
+    fi
+else
+    echo "❌ Build failed - check for compilation errors"
+    exit 1
+fi

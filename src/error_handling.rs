@@ -46,6 +46,26 @@ pub enum SpiceErrorType {
     InsufficientData,
     /// Numerical integration or interpolation failure
     NumericalError,
+    /// Kernel already loaded error
+    KernelAlreadyLoaded,
+    /// Kernel loading error
+    KernelLoadError,
+    /// Too many kernels loaded
+    TooManyKernels,
+    /// Invalid kernel path
+    InvalidKernelPath,
+    /// Invalid kernel data format
+    InvalidKernelData,
+    /// File read error
+    FileReadError,
+    /// Kernel pool not initialized error
+    PoolNotInitialized,
+    /// Invalid data type for kernel pool operations  
+    InvalidDataType,
+    /// Invalid format (e.g., malformed text kernel)
+    InvalidFormat,
+    /// Invalid index (e.g., array index out of bounds)
+    InvalidIndex,
     /// Generic SPICE error
     SpiceError,
 }
@@ -97,7 +117,17 @@ impl SpiceError {
             SpiceErrorType::InvalidArgument => "INVALID_ARGUMENT",
             SpiceErrorType::InsufficientData => "INSUFFICIENT_DATA",
             SpiceErrorType::NumericalError => "NUMERICAL_ERROR",
+            SpiceErrorType::KernelAlreadyLoaded => "KERNEL_ALREADY_LOADED",
+            SpiceErrorType::TooManyKernels => "TOO_MANY_KERNELS",
+            SpiceErrorType::InvalidKernelPath => "INVALID_KERNEL_PATH",
+            SpiceErrorType::InvalidKernelData => "INVALID_KERNEL_DATA",
+            SpiceErrorType::FileReadError => "FILE_READ_ERROR",
+            SpiceErrorType::PoolNotInitialized => "POOL_NOT_INITIALIZED",
+            SpiceErrorType::InvalidDataType => "INVALID_DATA_TYPE",
+            SpiceErrorType::InvalidFormat => "INVALID_FORMAT",
+            SpiceErrorType::InvalidIndex => "INVALID_INDEX",
             SpiceErrorType::SpiceError => "SPICE_ERROR",
+            SpiceErrorType::KernelLoadError => "KERNEL_LOAD_ERROR",
         }
     }
 }
